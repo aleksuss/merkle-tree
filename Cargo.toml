@@ -1,0 +1,8 @@
+[package]
+name = "merkle-tree"
+version = "0.1.0"
+authors = ["Oleksandr Anyshchenko <oleksandr.anyshchenko@gmail.com>"]
+
+[dependencies]
+rust-crypto = "0.2.36"
+serde = "1.0.2"
