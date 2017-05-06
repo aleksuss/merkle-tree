@@ -1,12 +1,19 @@
-use std::collections::VecDeque;
+use std::collections::{BTreeMap, VecDeque};
 
 use element::Element;
+use hash_utils::*;
+
+enum ProofNode<'a> {
+    Left(&'a String),
+    Right(&'a String)
+}
 
 pub struct MerkleTree {
     root: Element,
     height: usize,
     count: usize,
-    storage: VecDeque<String>
+    storage: VecDeque<String>,
+    nodes: BTreeMap<usize, VecDeque<Element>>
 }
 
 impl MerkleTree {
@@ -16,7 +23,8 @@ impl MerkleTree {
             root: Element::empty(),
             height: 0,
             count: 0,
-            storage: VecDeque::new()
+            storage: VecDeque::new(),
+            nodes: BTreeMap::new()
         }
     }
 
@@ -56,73 +64,120 @@ impl MerkleTree {
 
     pub fn calculate_tree(&mut self) {
         self.count = self.storage.len();
-        self.height = 1;
+        self.height = Self::calculate_height(self.count);
         self.root = Element::empty();
+        self.nodes.clear();
+        let mut current_level = self.height;
 
         if !self.storage.is_empty() {
-            let mut current_row = self.storage.iter()
+            let leaves = self.storage.iter()
                 .map(|value| Element::create_leaf(&value))
                 .collect::<VecDeque<Element>>();
-            while current_row.len() > 1 {
-                let mut next_row = VecDeque::new();
-                while !current_row.is_empty() {
-                    let node = if current_row.len() > 1 {
-                        let left = current_row.pop_front().unwrap();
-                        let right = current_row.pop_front().unwrap();
-                        println!("left hash: {}\nright hash: {}", &left.hash().unwrap(), &right.hash().unwrap());
-                        Element::create_node(&left, &right)
-                    } else {
-                        let left = current_row.pop_front().unwrap();
-                        println!("left hash: {}\nright hash: {}", &left.hash().unwrap(), &left.hash().unwrap());
-                        Element::create_node(&left, &left)
-                    };
+            self.nodes.insert(current_level, leaves);
 
-                    next_row.push_back(node);
-                }
-                self.height += 1;
-                current_row = next_row;
+            while current_level > 0 {
+                let above_level = current_level - 1;
+                let above_row = {
+                    let mut row = VecDeque::new();
+                    let current_row = self.nodes.get(&current_level).unwrap();
+
+                    for i in (0..current_row.len()).step_by(2) {
+                        let left = current_row.get(i).unwrap();
+                        let right = current_row.get(i+1).unwrap_or(left);
+                        let node = Element::create_node(left, right);
+                        row.push_back(node);
+                    }
+                    row
+                };
+
+                self.nodes.insert(above_level, above_row);
+                current_level -= 1;
             }
-            self.root = current_row.pop_front().unwrap();
-            println!("root hash: {}", self.root_hash().unwrap());
+            assert!(current_level == 0);
+            self.root = self.nodes.get(&0).unwrap()[0].clone(); //root_node;
         }
     }
-}
 
-#[test]
-fn test_height() {
-    let mut db = MerkleTree::new();
+    pub fn validate_element(&self, value: String, root_hash: String) -> bool {
+        let needed_hashes = self.get_needed_hashes(&value);
+        let mut hash = create_leaf_hash(&value);
+        let mut level = self.height;
 
-    assert_eq!(&"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9".to_string(),
-    db.root_hash().unwrap());
+        while level > 0 {
+            if let Some(h) = needed_hashes.get(&level) {
+                hash = match *h {
+                    ProofNode::Left(ref proof_hash) => create_node_hash(proof_hash, &&hash),
+                    ProofNode::Right(ref proof_hash) => create_node_hash(&&hash, proof_hash)
+                };
+            } else {
+                return false;
+            }
+            level -= 1;
+        }
 
-    db.append("1");
-    db.append("2");
-    db.append("3");
-    db.append("4");
-    db.append("5");
-    db.append("6");
-    db.append("7");
-    db.append("8");
-    db.append("9");
-    db.append("10");
-    db.append("11");
-    db.append("12");
+        hash == root_hash
+    }
 
-    assert_eq!(12, db.len());
-    assert_eq!(5, db.height());
-    assert_eq!(&"8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string(),
-        db.root_hash().unwrap());
-}
+    fn get_needed_hashes(&self, value: &String) -> BTreeMap<usize, ProofNode> {
+        let mut level = self.height;
+        let mut next_hash = create_leaf_hash(&value);
+        let mut needed_hashes = BTreeMap::new();
 
-#[test]
-fn test_get_element() {
-    let mut db = MerkleTree::new();
-    db.append("1");
-    db.append("2");
-    db.append("3");
-    db.append("4");
-    db.append("xyz");
+        while level > 0 {
+            if let Some(index) = self.get_element_index(level, &next_hash) {
+                let nodes = self.nodes.get(&level).unwrap();
+                match nodes.get(index) {
+                    Some(&Element::Leaf { ref hash, ..}) | Some(&Element::Node { ref hash, ..}) => {
+                        if index % 2 == 0 {
+                            if let Some(sibling_node) = nodes.get(index+1) {
+                                needed_hashes.insert(level, ProofNode::Right(sibling_node.hash().unwrap()));
+                                next_hash = create_node_hash(hash, sibling_node.hash().unwrap());
+                            } else {
+                                needed_hashes.insert(level, ProofNode::Right(hash));
+                                next_hash = create_node_hash(hash, hash);
+                            }
+                        } else {
+                            if let Some(sibling_node) = nodes.get(index-1) {
+                                needed_hashes.insert(level, ProofNode::Left(sibling_node.hash().unwrap()));
+                                next_hash = create_node_hash(sibling_node.hash().unwrap(), hash);
+                            }
+                        }
 
-    assert_eq!(&"2".to_string(), db.get(1).unwrap());
-    assert_eq!(&"xyz".to_string(), db.get(4).unwrap());
+                    },
+                    _ => continue
+                };
+            }
+            level -= 1;
+        }
+        needed_hashes
+    }
+
+//    pub fn print_nodes(&self) {
+//        for (i, nodes) in &self.nodes {
+//            println!("level: {}", i);
+//            for node in nodes {
+//                println!("\thash node: {:?}", &node.hash().unwrap());
+//            }
+//
+//        }
+//    }
+
+    fn get_element_index(&self, level: usize, hash: &String) -> Option<usize> {
+        let row_hashes = self.nodes.get(&level).unwrap().iter()
+            .map(|e| e.get_hash().unwrap()).collect::<Vec<&String>>();
+        row_hashes.iter().position(|&s| s == hash)
+    }
+
+    pub fn calculate_height(count: usize) -> usize {
+        if count > 0 {
+            let height = (count as f64).log2();
+            if height - height.floor() > 0.0 {
+                (height + 1.0) as usize
+            } else {
+                height as usize
+            }
+        } else {
+            0
+        }
+    }
 }

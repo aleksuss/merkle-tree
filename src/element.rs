@@ -1,6 +1,6 @@
 use hash_utils::*;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Element {
     Node {
         left_node: Box<Element>,
@@ -32,7 +32,7 @@ impl Element {
     }
 
     pub fn create_leaf(value: &String) -> Element {
-        let leaf_hash = crate_leaf_hash(value);
+        let leaf_hash = create_leaf_hash(value);
 
         Element::Leaf {
             data: value.to_string(),
@@ -47,6 +47,9 @@ impl Element {
             left_node: Box::new(left.clone()),
             right_node: Box::new(right.clone())
         }
+    }
 
+    pub fn get_hash(&self) -> Option<&String> {
+        self.hash()
     }
 }
