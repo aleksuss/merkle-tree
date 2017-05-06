@@ -50,8 +50,4 @@ impl<T: Display> Element<T> {
             right_node: Box::new(right)
         }
     }
-
-    pub fn get_hash(&self) -> Option<&String> {
-        self.hash()
-    }
 }
