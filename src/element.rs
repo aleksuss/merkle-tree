@@ -48,8 +48,4 @@ impl Element {
             right_node: Box::new(right.clone())
         }
     }
-
-    pub fn get_hash(&self) -> Option<&String> {
-        self.hash()
-    }
 }

@@ -164,7 +164,7 @@ impl MerkleTree {
 
     fn get_element_index(&self, level: usize, hash: &String) -> Option<usize> {
         let row_hashes = self.nodes.get(&level).unwrap().iter()
-            .map(|e| e.get_hash().unwrap()).collect::<Vec<&String>>();
+            .map(|e| e.hash().unwrap()).collect::<Vec<&String>>();
         row_hashes.iter().position(|&s| s == hash)
     }
 
