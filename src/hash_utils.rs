@@ -7,18 +7,17 @@ pub fn empty_hash() -> String {
     create_leaf_hash(&0)
 }
 
-pub fn create_leaf_hash<T: Display>(input: &T) -> String {
+pub fn create_leaf_hash<T: ToString>(input: &T) -> String {
     let mut hasher = Sha256::new();
-    hasher.input_str(&input.to_string());
+    hasher.input_str(&input.to_string().as_ref());
     let result = hasher.result_str();
     result
 }
 
-pub fn create_node_hash<T: AsRef<str>>(left: &T, right: &T) -> String {
+pub fn create_node_hash<T: ToString>(left: &T, right: &T) -> String {
     let mut hasher = Sha256::new();
-    hasher.input_str(left.as_ref());
-    hasher.input_str(right.as_ref());
+    hasher.input_str(left.to_string().as_ref());
+    hasher.input_str(right.to_string().as_ref());
     let result = hasher.result_str();
     result
 }
-

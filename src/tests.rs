@@ -47,15 +47,15 @@ fn test_height() {
 #[test]
 fn test_get_element() {
     let mut db = MerkleTree::new();
-    db.append("1");
-    db.append("2");
-    db.append("3");
-    db.append("4");
-    db.append("xyz");
+    db.append(1);
+    db.append(2);
+    db.append(3);
+    db.append(4);
+    db.append(6664);
 
-    assert_eq!(&"2".to_string(), db.get(1).unwrap_or(&"None".to_string()));
-    assert_eq!(&"xyz".to_string(), db.get(4).unwrap_or(&"None".to_string()));
-    assert!(db.validate_element("4".to_string(), db.root_hash().unwrap().to_string()));
+    assert_eq!(2, *db.get(1).unwrap());
+    assert_eq!(6664, *db.get(4).unwrap());
+    assert!(db.validate_element(4, db.root_hash().unwrap().to_string()));
 
     //    db.print_nodes();
 }

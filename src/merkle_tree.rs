@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, VecDeque};
+use std::fmt::Display;
 
 use element::Element;
 use hash_utils::*;
@@ -8,15 +9,15 @@ enum ProofNode<'a> {
     Right(&'a String)
 }
 
-pub struct MerkleTree {
-    root: Element,
+pub struct MerkleTree<T: ToString + Display> {
+    root: Element<T>,
     height: usize,
     count: usize,
-    storage: VecDeque<String>,
-    nodes: BTreeMap<usize, VecDeque<Element>>
+    storage: VecDeque<T>,
+    nodes: BTreeMap<usize, VecDeque<Element<T>>>
 }
 
-impl MerkleTree {
+impl<T: ToString + Display> MerkleTree<T> {
 
     pub fn new() -> Self {
         MerkleTree {
@@ -28,13 +29,13 @@ impl MerkleTree {
         }
     }
 
-    pub fn append(&mut self, value: &str) {
-        self.storage.push_back(value.into());
+    pub fn append(&mut self, value: T) {
+        self.storage.push_back(value);
         self.count = self.storage.len();
         self.calculate_tree();
     }
 
-    pub fn get(&self, index: usize) -> Option<&String> {
+    pub fn get(&self, index: usize) -> Option<&T> {
         self.storage.get(index)
     }
 
@@ -54,13 +55,13 @@ impl MerkleTree {
         self.root.hash()
     }
 
-    pub fn get_values(&self) -> Option<VecDeque<String>> {
-        if self.storage.is_empty() {
-            None
-        } else {
-            Some(self.storage.clone())
-        }
-    }
+//    pub fn get_values(&self) -> Option<VecDeque<&T>> {
+//        if self.storage.is_empty() {
+//            None
+//        } else {
+//            Some(self.storage.clone())
+//        }
+//    }
 
     pub fn calculate_tree(&mut self) {
         self.count = self.storage.len();
@@ -72,7 +73,7 @@ impl MerkleTree {
         if !self.storage.is_empty() {
             let leaves = self.storage.iter()
                 .map(|value| Element::create_leaf(&value))
-                .collect::<VecDeque<Element>>();
+                .collect::<VecDeque<Element<_>>>();
             self.nodes.insert(current_level, leaves);
 
             while current_level > 0 {
@@ -98,7 +99,7 @@ impl MerkleTree {
         }
     }
 
-    pub fn validate_element(&self, value: String, root_hash: String) -> bool {
+    pub fn validate_element(&self, value: T, root_hash: String) -> bool {
         let needed_hashes = self.get_needed_hashes(&value);
         let mut hash = create_leaf_hash(&value);
         let mut level = self.height;

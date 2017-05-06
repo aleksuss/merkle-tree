@@ -1,14 +1,16 @@
+use std::fmt::Display;
+
 use hash_utils::*;
 
 #[derive(Clone, Debug)]
-pub enum Element {
+pub enum Element<T: ToString + Display> {
     Node {
-        left_node: Box<Element>,
-        right_node: Box<Element>,
+        left_node: Box<Element<T>>,
+        right_node: Box<Element<T>>,
         hash: String
     },
     Leaf {
-        data: String,
+        data: T,
         hash: String
     },
     Empty {
@@ -16,7 +18,7 @@ pub enum Element {
     }
 }
 
-impl Element {
+impl<T: Display> Element<T> {
     pub fn empty() -> Self {
         Element::Empty {
             hash: empty_hash()
@@ -31,21 +33,21 @@ impl Element {
         }
     }
 
-    pub fn create_leaf(value: &String) -> Element {
+    pub fn create_leaf(value: &T) -> Element<T> {
         let leaf_hash = create_leaf_hash(value);
 
         Element::Leaf {
-            data: value.to_string(),
+            data: value,
             hash: leaf_hash
         }
     }
 
-    pub fn create_node(left: &Element, right: &Element) -> Element {
+    pub fn create_node(left: &Element<T>, right: &Element<T>) -> Element<T> {
         let combined_hash = create_node_hash(left.hash().unwrap(), right.hash().unwrap());
         Element::Node {
             hash: combined_hash,
-            left_node: Box::new(left.clone()),
-            right_node: Box::new(right.clone())
+            left_node: Box::new(left),
+            right_node: Box::new(right)
         }
     }
 
