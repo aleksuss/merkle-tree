@@ -6,3 +6,7 @@ authors = ["Oleksandr Anyshchenko <oleksandr.anyshchenko@gmail.com>"]
 [dependencies]
 rust-crypto = "0.2.36"
 serde = "1.0.2"
+
+[features]
+default = []
+dev = []
