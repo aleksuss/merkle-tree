@@ -36,6 +36,16 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         self.calculate_tree();
     }
 
+    pub fn remove(&mut self, index: usize) -> bool {
+        if let Some(_) = self.storage.remove(index) {
+            self.count = self.storage.len();
+            self.calculate_tree();
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn get(&self, index: usize) -> Option<&T> {
         if let Some(v) = self.storage.get(index) {
             Some(v.as_ref())
@@ -64,6 +74,7 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
 //        if self.storage.is_empty() {
 //            None
 //        } else {
+//
 //            Some(self.storage.clone())
 //        }
 //    }

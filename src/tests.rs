@@ -114,6 +114,8 @@ fn test_with_structs() {
     db.append(Person{ age: 5, name: "Bobbb".to_string()});
     db.append(Person{ age: 6, name: "Bobbbb".to_string()});
     assert_eq!(4, db.len());
+    assert!(db.validate_element(Person{age: 3, name: "Bob".to_string()}, db.root_hash().unwrap().clone()));
+    assert!(!db.validate_element(Person{age: 3, name: "Bobx".to_string()}, db.root_hash().unwrap().clone()));
 
 }
 
