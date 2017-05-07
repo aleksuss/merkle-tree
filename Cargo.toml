@@ -2,6 +2,7 @@
 name = "merkle-tree"
 version = "0.1.0"
 authors = ["Oleksandr Anyshchenko <oleksandr.anyshchenko@gmail.com>"]
+readme = "README.md"
 
 [lib]
 doctest = false
