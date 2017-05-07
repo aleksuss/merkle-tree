@@ -5,6 +5,7 @@ authors = ["Oleksandr Anyshchenko <oleksandr.anyshchenko@gmail.com>"]
 
 [dependencies]
 rust-crypto = "0.2.36"
+rand = "0.3"
 
 [features]
 default = []

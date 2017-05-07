@@ -30,6 +30,23 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         }
     }
 
+    pub fn from_vec(data: Vec<T>) -> Self {
+        if data.is_empty() {
+            Self::new()
+        } else {
+            let elements = data.into_iter().map(|e| Rc::new(e)).collect::<VecDeque<Rc<T>>>();
+            let mut result = MerkleTree {
+                root: Element::empty(),
+                height: 0,
+                count: 0,
+                storage: elements,
+                nodes: BTreeMap::new()
+            };
+            result.calculate_tree();
+            result
+        }
+    }
+
     pub fn append(&mut self, value: T) {
         self.storage.push_back(Rc::new(value));
         self.count = self.storage.len();

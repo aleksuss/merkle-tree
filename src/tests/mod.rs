@@ -1,14 +1,21 @@
 #![cfg(test)]
 
+mod benchmarks;
+
 use merkle_tree::{MerkleTree, calculate_height};
 use hash_utils::*;
 
 #[test]
-fn test_height() {
-    let mut db = MerkleTree::new();
-
+fn test_empty_tree_hash() {
+    let db: MerkleTree<u32> = MerkleTree::new();
     assert_eq!(&"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9".to_string(),
-    db.root_hash().unwrap_or(&"None".to_string()));
+                db.root_hash().unwrap_or(&"None".to_string()));
+}
+
+#[test]
+fn test_height_and_len() {
+    let root_hash = "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string();
+    let mut db = MerkleTree::new();
 
     db.append("1");
     db.append("2");
@@ -25,23 +32,13 @@ fn test_height() {
 
     assert_eq!(12, db.len());
     assert_eq!(4, db.height());
-    assert_eq!(4, calculate_height(db.len()));
-    assert_eq!(&"8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string(),
-    db.root_hash().unwrap_or(&"None".to_string()));
-
-    assert_eq!(true, db.validate_element("6",
-                                         "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(true, db.validate_element("11",
-                                         "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(false, db.validate_element("14",
-                                          "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(false, db.validate_element("14adsfasdfsad",
-                                          "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(true, db.validate_element("1",
-                                         "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(false, db.validate_element("1423232",
-                                          "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-
+    assert_eq!(&root_hash, db.root_hash().unwrap_or(&"None".to_string()));
+    assert_eq!(true, db.validate_element("6", root_hash.clone()));
+    assert_eq!(true, db.validate_element("11", root_hash.clone()));
+    assert_eq!(false, db.validate_element("14", root_hash.clone()));
+    assert_eq!(false, db.validate_element("14adsfasdfsad", root_hash.clone()));
+    assert_eq!(true, db.validate_element("1", root_hash.clone()));
+    assert_eq!(false, db.validate_element("1423232", root_hash.clone()));
 }
 
 #[test]
@@ -56,8 +53,6 @@ fn test_get_element() {
     assert_eq!(2, *db.get(1).unwrap());
     assert_eq!(6664, *db.get(4).unwrap());
     assert!(db.validate_element(4, db.root_hash().unwrap().to_string()));
-
-    //    db.print_nodes();
 }
 
 #[test]
@@ -120,12 +115,17 @@ fn test_with_structs() {
 }
 
 #[test]
-fn test_thousand_elements() {
-    let mut db = MerkleTree::new();
-
-    for e in 0..1000 {
-        db.append(e);
-    }
-
+fn test_append_element() {
+    let mut db = MerkleTree::from_vec((0..1000).collect::<Vec<_>>());
     assert_eq!(1000, db.len());
+    db.append(1000);
+    assert_eq!(1001, db.len());
+}
+
+#[test]
+fn test_remove_element() {
+    let mut db = MerkleTree::from_vec((0..1000).collect::<Vec<_>>());
+    assert_eq!(1000, db.len());
+    db.remove(5);
+    assert_eq!(999, db.len());
 }
