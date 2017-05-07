@@ -1,8 +1,8 @@
 #![cfg(test)]
 
-use test::Bencher;
 use merkle_tree::{MerkleTree, calculate_height};
 use hash_utils::*;
+
 #[test]
 fn test_height() {
     let mut db = MerkleTree::new();
@@ -119,11 +119,13 @@ fn test_with_structs() {
 
 }
 
-#[bench]
-fn test_insert(b: &mut Bencher) {
+#[test]
+fn test_thousand_elements() {
     let mut db = MerkleTree::new();
 
-    b.iter(|| {
-        db.append("c");
-    })
+    for e in 0..1000 {
+        db.append(e);
+    }
+
+    assert_eq!(1000, db.len());
 }
