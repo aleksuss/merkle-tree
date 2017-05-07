@@ -1,4 +1,5 @@
 use std::collections::{BTreeMap, VecDeque};
+use std::collections::vec_deque::Iter;
 use std::fmt::Display;
 use std::rc::Rc;
 
@@ -254,6 +255,22 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         hash == root_hash
     }
 
+    /// Returns a front-to-back iterator.
+    /// # Examples
+    ///
+    /// ```
+    /// extern crate merkel_tree;
+    /// use merkel_tree::MerkelTree;
+    ///
+    /// let tree = MerkelTree::from_vec(vec![1, 2, 3, 4]);
+    /// let vec: Vec<Rc<i32>> = tree.iter().collect();
+    /// assert_eq!(4, vec.len());
+    /// ```
+    pub fn iter(&self) -> Iter<Rc<T>> {
+        self.storage.iter()
+    }
+
+
     fn calculate_tree(&mut self) {
         self.count = self.storage.len();
         self.height = calculate_height(self.count);
@@ -332,6 +349,8 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         row_hashes.iter().position(|&s| s == hash)
     }
 }
+
+
 
 pub fn calculate_height(count: usize) -> usize {
     if count > 0 {
