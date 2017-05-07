@@ -20,14 +20,14 @@ pub struct MerkleTree<T: ToString + Display + Clone> {
 }
 
 impl<T: ToString + Display + Clone> MerkleTree<T> {
-    /// Creates new, empty `MerkelTree`.
+    /// Creates new, empty `MerkleTree`.
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let tree = MerkelTree::new();
+    /// let tree = MerkleTree::new();
     /// assert_eq!(0, tree.len());
     /// ```
     pub fn new() -> Self {
@@ -40,15 +40,15 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         }
     }
 
-    /// Creates `MerkelTree` from `Vec` of elements.
+    /// Creates `MerkleTree` from `Vec` of elements.
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
     /// let values = vec![1, 2, 3, 4];
-    /// let tree = MerkelTree::from_vec(values);
+    /// let tree = MerkleTree::from_vec(values);
     /// assert_eq!(4, tree.len());
     /// ```
     pub fn from_vec(data: Vec<T>) -> Self {
@@ -72,10 +72,10 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::new();
+    /// let mut tree = MerkleTree::new();
     /// tree.push(1);
     /// assert_eq!(1, tree.len());
     /// ```
@@ -90,10 +90,10 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::from_vec(vec![1, 2, 3]);
+    /// let mut tree = MerkleTree::from_vec(vec![1, 2, 3]);
     /// assert!(tree.remove(1));
     /// assert_eq!(2, tree.len());
     /// assert!(!tree.remove(5));
@@ -108,14 +108,14 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         }
     }
 
-    /// Retrieves an element in the `MerkelTree` by index.
+    /// Retrieves an element in the `MerkleTree` by index.
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::new();
+    /// let mut tree = MerkleTree::new();
     /// tree.push(1);
     /// tree.push(2);
     /// tree.push(3);
@@ -128,14 +128,14 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         }
     }
 
-    /// Retrieves copies of all elements in the `MerkelTree`.
+    /// Retrieves copies of all elements in the `MerkleTree`.
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::new();
+    /// let mut tree = MerkleTree::new();
     /// tree.push(1);
     /// tree.push(2);
     /// tree.push(3);
@@ -155,13 +155,13 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut mt = MerkelTree::new();
-    /// assert_eq!(mt.len(), 0);
-    /// v.push(1);
-    /// assert_eq!(mt.len(), 1);
+    /// let mut tree = MerkleTree::new();
+    /// assert_eq!(tree.len(), 0);
+    /// tree.push(1);
+    /// assert_eq!(tree.len(), 1);
     /// ```
     pub fn len(&self) -> usize {
         self.count
@@ -171,16 +171,16 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::new();
+    /// let mut tree = MerkleTree::new();
     /// assert_eq!(tree.height(), 0);
-    /// v.push(1);
+    /// tree.push(1);
     /// assert_eq!(tree.height(), 0);
-    /// v.push(2);
+    /// tree.push(2);
     /// assert_eq!(tree.height(), 1);
-    /// v.push(3);
+    /// tree.push(3);
     /// assert_eq!(tree.height(), 2);
     ///
     /// ```
@@ -188,16 +188,16 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         self.height
     }
 
-    /// Returns `true` if the `MerkelTree` is empty.
+    /// Returns `true` if the `MerkleTree` is empty.
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::new();
+    /// let mut tree = MerkleTree::new();
     /// assert!(tree.is_empty());
-    /// v.push(1);
+    /// tree.push(1);
     /// assert!(!tree.is_empty());
     /// ```
     pub fn is_empty(&self) -> bool {
@@ -205,34 +205,33 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     }
 
 
-    /// Returns root hash of `MerkelTree`
+    /// Returns root hash of `MerkleTree`
     /// # Examples
     ///
-    /// root hash of empty tree is: "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::new();
+    /// let mut tree = MerkleTree::new();
     /// assert_eq!(Some(&"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9".to_string()), tree.root_hash());
-    /// tree.append(1);
-    /// tree.append(2);
-    /// tree.append(3);
-    /// tree.append(4);
+    /// tree.push(1);
+    /// tree.push(2);
+    /// tree.push(3);
+    /// tree.push(4);
     /// assert_eq!(Some(&"85df8945419d2b5038f7ac83ec1ec6b8267c40fdb3b1e56ff62f6676eb855e70".to_string()), tree.root_hash());
     /// ```
     pub fn root_hash(&self) -> Option<&String> {
         self.root.hash()
     }
 
-    /// Verifies if the `value` really presents in `MerkelTree`
+    /// Verifies if the `value` really presents in `MerkleTree`
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let mut tree = MerkelTree::from_vec(vec![1, 2, 3, 4]);
+    /// let mut tree = MerkleTree::from_vec(vec![1, 2, 3, 4]);
     /// assert!(tree.validate_element(2, "85df8945419d2b5038f7ac83ec1ec6b8267c40fdb3b1e56ff62f6676eb855e70");
     /// ```
     pub fn validate_element(&self, value: T, root_hash: &str) -> bool {
@@ -259,10 +258,10 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     /// # Examples
     ///
     /// ```
-    /// extern crate merkel_tree;
-    /// use merkel_tree::MerkelTree;
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
     ///
-    /// let tree = MerkelTree::from_vec(vec![1, 2, 3, 4]);
+    /// let tree = MerkleTree::from_vec(vec![1, 2, 3, 4]);
     /// let vec: Vec<Rc<i32>> = tree.iter().collect();
     /// assert_eq!(4, vec.len());
     /// ```

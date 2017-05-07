@@ -4,12 +4,15 @@ version = "0.1.0"
 authors = ["Oleksandr Anyshchenko <oleksandr.anyshchenko@gmail.com>"]
 readme = "README.md"
 
+description = "Merkle Tree implementation in Rust"
+homepage    = "https://github.com/aleksuss/merkle-tree"
+repository  = "https://github.com/aleksuss/merkle-tree"
+
 [lib]
 doctest = false
 
 [dependencies]
 rust-crypto = "0.2.36"
-rand = "0.3"
 
 [features]
 dev = []

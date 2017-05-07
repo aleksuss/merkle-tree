@@ -1,3 +1,9 @@
+//! merkle-tree implement Merkle Tree in Rust.
+//!
+//! A disadvantage in current implementation is need to recalculate full tree when added
+//! or removed element into/from tree. To increase performance we need to implement partial
+//! tree modification when adding or removing element.
+
 #![feature(test)]
 #![feature(step_by)]
 

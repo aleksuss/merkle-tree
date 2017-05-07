@@ -1,5 +1,4 @@
 #![cfg(test)]
-extern crate rand;
 
 use test::Bencher;
 use merkle_tree::MerkleTree;
