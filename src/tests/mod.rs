@@ -17,42 +17,42 @@ fn test_height_and_len() {
     let root_hash = "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string();
     let mut db = MerkleTree::new();
 
-    db.append("1");
-    db.append("2");
-    db.append("3");
-    db.append("4");
-    db.append("5");
-    db.append("6");
-    db.append("7");
-    db.append("8");
-    db.append("9");
-    db.append("10");
-    db.append("11");
-    db.append("12");
+    db.push("1");
+    db.push("2");
+    db.push("3");
+    db.push("4");
+    db.push("5");
+    db.push("6");
+    db.push("7");
+    db.push("8");
+    db.push("9");
+    db.push("10");
+    db.push("11");
+    db.push("12");
 
     assert_eq!(12, db.len());
     assert_eq!(4, db.height());
     assert_eq!(&root_hash, db.root_hash().unwrap_or(&"None".to_string()));
-    assert_eq!(true, db.validate_element("6", root_hash.clone()));
-    assert_eq!(true, db.validate_element("11", root_hash.clone()));
-    assert_eq!(false, db.validate_element("14", root_hash.clone()));
-    assert_eq!(false, db.validate_element("14adsfasdfsad", root_hash.clone()));
-    assert_eq!(true, db.validate_element("1", root_hash.clone()));
-    assert_eq!(false, db.validate_element("1423232", root_hash.clone()));
+    assert_eq!(true, db.validate_element("6", root_hash.as_ref()));
+    assert_eq!(true, db.validate_element("11", root_hash.as_ref()));
+    assert_eq!(false, db.validate_element("14", root_hash.as_ref()));
+    assert_eq!(false, db.validate_element("14adsfasdfsad", root_hash.as_ref()));
+    assert_eq!(true, db.validate_element("1", root_hash.as_ref()));
+    assert_eq!(false, db.validate_element("1423232", root_hash.as_ref()));
 }
 
 #[test]
 fn test_get_element() {
     let mut db = MerkleTree::new();
-    db.append(1);
-    db.append(2);
-    db.append(3);
-    db.append(4);
-    db.append(6664);
+    db.push(1);
+    db.push(2);
+    db.push(3);
+    db.push(4);
+    db.push(6664);
 
     assert_eq!(2, *db.get(1).unwrap());
     assert_eq!(6664, *db.get(4).unwrap());
-    assert!(db.validate_element(4, db.root_hash().unwrap().to_string()));
+    assert!(db.validate_element(4, db.root_hash().unwrap()));
 }
 
 #[test]
@@ -104,13 +104,13 @@ impl Display for Person {
 #[test]
 fn test_with_structs() {
     let mut db = MerkleTree::new();
-    db.append(Person{ age: 3, name: "Bob".to_string()});
-    db.append(Person{ age: 4, name: "Bobb".to_string()});
-    db.append(Person{ age: 5, name: "Bobbb".to_string()});
-    db.append(Person{ age: 6, name: "Bobbbb".to_string()});
+    db.push(Person{ age: 3, name: "Bob".to_string()});
+    db.push(Person{ age: 4, name: "Bobb".to_string()});
+    db.push(Person{ age: 5, name: "Bobbb".to_string()});
+    db.push(Person{ age: 6, name: "Bobbbb".to_string()});
     assert_eq!(4, db.len());
-    assert!(db.validate_element(Person{age: 3, name: "Bob".to_string()}, db.root_hash().unwrap().clone()));
-    assert!(!db.validate_element(Person{age: 3, name: "Bobx".to_string()}, db.root_hash().unwrap().clone()));
+    assert!(db.validate_element(Person{age: 3, name: "Bob".to_string()}, db.root_hash().unwrap()));
+    assert!(!db.validate_element(Person{age: 3, name: "Bobx".to_string()}, db.root_hash().unwrap()));
 
 }
 
@@ -118,7 +118,7 @@ fn test_with_structs() {
 fn test_append_element() {
     let mut db = MerkleTree::from_vec((0..1000).collect::<Vec<_>>());
     assert_eq!(1000, db.len());
-    db.append(1000);
+    db.push(1000);
     assert_eq!(1001, db.len());
 }
 
@@ -128,4 +128,10 @@ fn test_remove_element() {
     assert_eq!(1000, db.len());
     db.remove(5);
     assert_eq!(999, db.len());
+}
+
+#[test]
+fn test_get_values() {
+    let db = MerkleTree::from_vec((0..5).collect::<Vec<_>>());
+    assert_eq!(db.get_values(), Some(vec![0, 1, 2, 3, 4]));
 }

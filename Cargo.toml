@@ -3,10 +3,9 @@ name = "merkle-tree"
 version = "0.1.0"
 authors = ["Oleksandr Anyshchenko <oleksandr.anyshchenko@gmail.com>"]
 
+[lib]
+doctest = false
+
 [dependencies]
 rust-crypto = "0.2.36"
 rand = "0.3"
-
-[features]
-default = []
-dev = []
