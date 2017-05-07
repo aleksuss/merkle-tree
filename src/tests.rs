@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use test::Bencher;
-use merkle_tree::MerkleTree;
+use merkle_tree::{MerkleTree, calculate_height};
 use hash_utils::*;
 #[test]
 fn test_height() {
@@ -25,21 +25,21 @@ fn test_height() {
 
     assert_eq!(12, db.len());
     assert_eq!(4, db.height());
-    assert_eq!(4, MerkleTree::calculate_height(db.len()));
+    assert_eq!(4, calculate_height(db.len()));
     assert_eq!(&"8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string(),
     db.root_hash().unwrap_or(&"None".to_string()));
 
-    assert_eq!(true, db.validate_element("6".to_string(),
+    assert_eq!(true, db.validate_element("6",
                                          "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(true, db.validate_element("11".to_string(),
+    assert_eq!(true, db.validate_element("11",
                                          "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(false, db.validate_element("14".to_string(),
+    assert_eq!(false, db.validate_element("14",
                                           "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(false, db.validate_element("14adsfasdfsad".to_string(),
+    assert_eq!(false, db.validate_element("14adsfasdfsad",
                                           "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(true, db.validate_element("1".to_string(),
+    assert_eq!(true, db.validate_element("1",
                                          "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
-    assert_eq!(false, db.validate_element("1423232".to_string(),
+    assert_eq!(false, db.validate_element("1423232",
                                           "8fed6b1d66ea88efd0c1b7e752334a08128791e974dce6f4c14902fa0e33d5e1".to_string()));
 
 }
@@ -62,14 +62,14 @@ fn test_get_element() {
 
 #[test]
 fn test_height_calc() {
-    assert_eq!(0, MerkleTree::calculate_height(0));
-    assert_eq!(0, MerkleTree::calculate_height(1));
-    assert_eq!(1, MerkleTree::calculate_height(2));
-    assert_eq!(2, MerkleTree::calculate_height(3));
-    assert_eq!(2, MerkleTree::calculate_height(4));
-    assert_eq!(3, MerkleTree::calculate_height(5));
-    assert_eq!(3, MerkleTree::calculate_height(8));
-    assert_eq!(4, MerkleTree::calculate_height(9));
+    assert_eq!(0, calculate_height(0));
+    assert_eq!(0, calculate_height(1));
+    assert_eq!(1, calculate_height(2));
+    assert_eq!(2, calculate_height(3));
+    assert_eq!(2, calculate_height(4));
+    assert_eq!(3, calculate_height(5));
+    assert_eq!(3, calculate_height(8));
+    assert_eq!(4, calculate_height(9));
 }
 
 #[test]
@@ -92,6 +92,31 @@ fn test_combined_hash() {
     assert_eq!("15e178b71fae8849ee562c9cc0d7ea322fba6cd495411329d47234479167cc8b", node_hash);
 }
 
+use std::fmt::{Display, Formatter, Result};
+
+#[derive(Clone)]
+struct Person {
+    age: usize,
+    name: String
+}
+
+impl Display for Person {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        write!(f, "age: {}, name: {}", self.age, self.name)
+    }
+}
+
+#[test]
+fn test_with_structs() {
+    let mut db = MerkleTree::new();
+    db.append(Person{ age: 3, name: "Bob".to_string()});
+    db.append(Person{ age: 4, name: "Bobb".to_string()});
+    db.append(Person{ age: 5, name: "Bobbb".to_string()});
+    db.append(Person{ age: 6, name: "Bobbbb".to_string()});
+    assert_eq!(4, db.len());
+
+}
+
 #[bench]
 fn test_insert(b: &mut Bencher) {
     let mut db = MerkleTree::new();
@@ -100,4 +125,3 @@ fn test_insert(b: &mut Bencher) {
         db.append("c");
     })
 }
-

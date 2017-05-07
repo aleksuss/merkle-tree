@@ -1,7 +1,6 @@
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use std::string::ToString;
-use std::fmt::Display;
 
 pub fn empty_hash() -> String {
     create_leaf_hash(&0)

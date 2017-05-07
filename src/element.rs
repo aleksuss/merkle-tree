@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::rc::Rc;
 
 use hash_utils::*;
 
@@ -10,7 +11,7 @@ pub enum Element<T: ToString + Display> {
         hash: String
     },
     Leaf {
-        data: T,
+        data: Rc<T>,
         hash: String
     },
     Empty {
@@ -33,8 +34,8 @@ impl<T: Display> Element<T> {
         }
     }
 
-    pub fn create_leaf(value: &T) -> Element<T> {
-        let leaf_hash = create_leaf_hash(value);
+    pub fn create_leaf(value: Rc<T>) -> Element<T> {
+        let leaf_hash = create_leaf_hash(value.as_ref());
 
         Element::Leaf {
             data: value,
@@ -42,7 +43,7 @@ impl<T: Display> Element<T> {
         }
     }
 
-    pub fn create_node(left: &Element<T>, right: &Element<T>) -> Element<T> {
+    pub fn create_node(left: Element<T>, right: Element<T>) -> Element<T> {
         let combined_hash = create_node_hash(left.hash().unwrap(), right.hash().unwrap());
         Element::Node {
             hash: combined_hash,

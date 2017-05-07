@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, VecDeque};
 use std::fmt::Display;
+use std::rc::Rc;
 
 use element::Element;
 use hash_utils::*;
@@ -9,15 +10,15 @@ enum ProofNode<'a> {
     Right(&'a String)
 }
 
-pub struct MerkleTree<T: ToString + Display> {
+pub struct MerkleTree<T: ToString + Display + Clone> {
     root: Element<T>,
     height: usize,
     count: usize,
-    storage: VecDeque<T>,
+    storage: VecDeque<Rc<T>>,
     nodes: BTreeMap<usize, VecDeque<Element<T>>>
 }
 
-impl<T: ToString + Display> MerkleTree<T> {
+impl<T: ToString + Display + Clone> MerkleTree<T> {
 
     pub fn new() -> Self {
         MerkleTree {
@@ -30,13 +31,17 @@ impl<T: ToString + Display> MerkleTree<T> {
     }
 
     pub fn append(&mut self, value: T) {
-        self.storage.push_back(value);
+        self.storage.push_back(Rc::new(value));
         self.count = self.storage.len();
         self.calculate_tree();
     }
 
     pub fn get(&self, index: usize) -> Option<&T> {
-        self.storage.get(index)
+        if let Some(v) = self.storage.get(index) {
+            Some(v.as_ref())
+        } else {
+            None
+        }
     }
 
     pub fn len(&self) -> usize {
@@ -65,15 +70,18 @@ impl<T: ToString + Display> MerkleTree<T> {
 
     pub fn calculate_tree(&mut self) {
         self.count = self.storage.len();
-        self.height = Self::calculate_height(self.count);
+        self.height = calculate_height(self.count);
         self.root = Element::empty();
         self.nodes.clear();
         let mut current_level = self.height;
 
         if !self.storage.is_empty() {
-            let leaves = self.storage.iter()
-                .map(|value| Element::create_leaf(&value))
-                .collect::<VecDeque<Element<_>>>();
+            let mut leaves = VecDeque::new();
+            for value in &self.storage {
+                let e = Element::create_leaf(value.clone());
+                leaves.push_back(e);
+            }
+
             self.nodes.insert(current_level, leaves);
 
             while current_level > 0 {
@@ -81,11 +89,10 @@ impl<T: ToString + Display> MerkleTree<T> {
                 let above_row = {
                     let mut row = VecDeque::new();
                     let current_row = self.nodes.get(&current_level).unwrap();
-
                     for i in (0..current_row.len()).step_by(2) {
                         let left = current_row.get(i).unwrap();
                         let right = current_row.get(i+1).unwrap_or(left);
-                        let node = Element::create_node(left, right);
+                        let node = Element::create_node(left.clone(), right.clone());
                         row.push_back(node);
                     }
                     row
@@ -119,7 +126,7 @@ impl<T: ToString + Display> MerkleTree<T> {
         hash == root_hash
     }
 
-    fn get_needed_hashes(&self, value: &String) -> BTreeMap<usize, ProofNode> {
+    fn get_needed_hashes(&self, value: &T) -> BTreeMap<usize, ProofNode> {
         let mut level = self.height;
         let mut next_hash = create_leaf_hash(&value);
         let mut needed_hashes = BTreeMap::new();
@@ -168,17 +175,17 @@ impl<T: ToString + Display> MerkleTree<T> {
             .map(|e| e.hash().unwrap()).collect::<Vec<&String>>();
         row_hashes.iter().position(|&s| s == hash)
     }
+}
 
-    pub fn calculate_height(count: usize) -> usize {
-        if count > 0 {
-            let height = (count as f64).log2();
-            if height - height.floor() > 0.0 {
-                (height + 1.0) as usize
-            } else {
-                height as usize
-            }
+pub fn calculate_height(count: usize) -> usize {
+    if count > 0 {
+        let height = (count as f64).log2();
+        if height - height.floor() > 0.0 {
+            (height + 1.0) as usize
         } else {
-            0
+            height as usize
         }
+    } else {
+        0
     }
 }
