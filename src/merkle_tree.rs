@@ -11,6 +11,7 @@ enum ProofNode<'a> {
     Right(&'a String),
 }
 
+#[derive(Debug)]
 pub struct MerkleTree<T: ToString + Display + Clone> {
     root: Element<T>,
     height: usize,
