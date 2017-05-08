@@ -13,6 +13,7 @@ doctest = false
 
 [dependencies]
 rust-crypto = "0.2.36"
+clippy = {version = "0.0.131", optional = true}
 
 [features]
-dev = []
+dev = ["clippy"]

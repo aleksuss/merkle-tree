@@ -11,6 +11,7 @@ enum ProofNode<'a> {
     Right(&'a String),
 }
 
+/// MerkleTree struct represents merkle binary tree with values of type `T` and map of nodes.
 #[derive(Debug)]
 pub struct MerkleTree<T: ToString + Display + Clone> {
     root: Element<T>,
