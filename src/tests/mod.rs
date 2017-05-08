@@ -9,7 +9,7 @@ use hash_utils::*;
 fn test_empty_tree_hash() {
     let db: MerkleTree<u32> = MerkleTree::new();
     assert_eq!(&"5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9".to_string(),
-                db.root_hash().unwrap_or(&"None".to_string()));
+               db.root_hash().unwrap_or(&"None".to_string()));
 }
 
 #[test]
@@ -36,7 +36,8 @@ fn test_height_and_len() {
     assert_eq!(true, db.validate_element("6", root_hash.as_ref()));
     assert_eq!(true, db.validate_element("11", root_hash.as_ref()));
     assert_eq!(false, db.validate_element("14", root_hash.as_ref()));
-    assert_eq!(false, db.validate_element("14adsfasdfsad", root_hash.as_ref()));
+    assert_eq!(false,
+               db.validate_element("14adsfasdfsad", root_hash.as_ref()));
     assert_eq!(true, db.validate_element("1", root_hash.as_ref()));
     assert_eq!(false, db.validate_element("1423232", root_hash.as_ref()));
 }
@@ -76,7 +77,7 @@ fn test_size() {
 #[test]
 fn test_hash() {
     assert_eq!("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
-    create_leaf_hash(&"hello".to_string()));
+               create_leaf_hash(&"hello".to_string()));
 }
 
 #[test]
@@ -84,7 +85,8 @@ fn test_combined_hash() {
     let hello_hash = create_leaf_hash(&"hello".to_string());
     let world_hash = create_leaf_hash(&"world".to_string());
     let node_hash = create_node_hash(&hello_hash, &world_hash);
-    assert_eq!("15e178b71fae8849ee562c9cc0d7ea322fba6cd495411329d47234479167cc8b", node_hash);
+    assert_eq!("15e178b71fae8849ee562c9cc0d7ea322fba6cd495411329d47234479167cc8b",
+               node_hash);
 }
 
 use std::fmt::{Display, Formatter, Result};
@@ -92,7 +94,7 @@ use std::fmt::{Display, Formatter, Result};
 #[derive(Clone)]
 struct Person {
     age: usize,
-    name: String
+    name: String,
 }
 
 impl Display for Person {
@@ -104,13 +106,33 @@ impl Display for Person {
 #[test]
 fn test_with_structs() {
     let mut db = MerkleTree::new();
-    db.push(Person{ age: 3, name: "Bob".to_string()});
-    db.push(Person{ age: 4, name: "Bobb".to_string()});
-    db.push(Person{ age: 5, name: "Bobbb".to_string()});
-    db.push(Person{ age: 6, name: "Bobbbb".to_string()});
+    db.push(Person {
+                age: 3,
+                name: "Bob".to_string(),
+            });
+    db.push(Person {
+                age: 4,
+                name: "Bobb".to_string(),
+            });
+    db.push(Person {
+                age: 5,
+                name: "Bobbb".to_string(),
+            });
+    db.push(Person {
+                age: 6,
+                name: "Bobbbb".to_string(),
+            });
     assert_eq!(4, db.len());
-    assert!(db.validate_element(Person{age: 3, name: "Bob".to_string()}, db.root_hash().unwrap()));
-    assert!(!db.validate_element(Person{age: 3, name: "Bobx".to_string()}, db.root_hash().unwrap()));
+    assert!(db.validate_element(Person {
+                                    age: 3,
+                                    name: "Bob".to_string(),
+                                },
+                                db.root_hash().unwrap()));
+    assert!(!db.validate_element(Person {
+                                     age: 3,
+                                     name: "Bobx".to_string(),
+                                 },
+                                 db.root_hash().unwrap()));
 
 }
 
@@ -148,4 +170,4 @@ fn test_root_calculation() {
     let root = create_node_hash(&h12, &h34);
     assert_eq!(&root, db.root_hash().unwrap());
     assert!(db.validate_element(2, db.root_hash().unwrap()));
- }
+}

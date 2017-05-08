@@ -8,7 +8,7 @@ use hash_utils::*;
 
 enum ProofNode<'a> {
     Left(&'a String),
-    Right(&'a String)
+    Right(&'a String),
 }
 
 pub struct MerkleTree<T: ToString + Display + Clone> {
@@ -16,7 +16,7 @@ pub struct MerkleTree<T: ToString + Display + Clone> {
     height: usize,
     count: usize,
     storage: VecDeque<Rc<T>>,
-    nodes: BTreeMap<usize, VecDeque<Element<T>>>
+    nodes: BTreeMap<usize, VecDeque<Element<T>>>,
 }
 
 impl<T: ToString + Display + Clone> MerkleTree<T> {
@@ -36,7 +36,7 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
             height: 0,
             count: 0,
             storage: VecDeque::new(),
-            nodes: BTreeMap::new()
+            nodes: BTreeMap::new(),
         }
     }
 
@@ -55,13 +55,15 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         if data.is_empty() {
             Self::new()
         } else {
-            let elements = data.into_iter().map(|e| Rc::new(e)).collect::<VecDeque<Rc<T>>>();
+            let elements = data.into_iter()
+                .map(|e| Rc::new(e))
+                .collect::<VecDeque<Rc<T>>>();
             let mut result = MerkleTree {
                 root: Element::empty(),
                 height: 0,
                 count: 0,
                 storage: elements,
-                nodes: BTreeMap::new()
+                nodes: BTreeMap::new(),
             };
             result.calculate_tree();
             result
@@ -144,7 +146,8 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         if self.storage.is_empty() {
             None
         } else {
-            let values = self.storage.iter()
+            let values = self.storage
+                .iter()
                 .map(|v| v.as_ref().clone())
                 .collect::<Vec<T>>();
             Some(values)
@@ -243,7 +246,7 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
             if let Some(h) = needed_hashes.get(&level) {
                 hash = match *h {
                     ProofNode::Left(ref proof_hash) => create_node_hash(proof_hash, &&hash),
-                    ProofNode::Right(ref proof_hash) => create_node_hash(&&hash, proof_hash)
+                    ProofNode::Right(ref proof_hash) => create_node_hash(&&hash, proof_hash),
                 };
             } else {
                 return false;
@@ -293,7 +296,7 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
                     let current_row = self.nodes.get(&current_level).unwrap();
                     for i in (0..current_row.len()).step_by(2) {
                         let left = current_row.get(i).unwrap();
-                        let right = current_row.get(i+1).unwrap_or(left);
+                        let right = current_row.get(i + 1).unwrap_or(left);
                         let node = Element::create_node(left.clone(), right.clone());
                         row.push_back(node);
                     }
@@ -317,24 +320,28 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
             if let Some(index) = self.get_element_index(level, &next_hash) {
                 let nodes = self.nodes.get(&level).unwrap();
                 match nodes.get(index) {
-                    Some(&Element::Leaf { ref hash, ..}) | Some(&Element::Node { ref hash, ..}) => {
+                    Some(&Element::Leaf { ref hash, .. }) |
+                    Some(&Element::Node { ref hash, .. }) => {
                         if index % 2 == 0 {
-                            if let Some(sibling_node) = nodes.get(index+1) {
-                                needed_hashes.insert(level, ProofNode::Right(sibling_node.hash().unwrap()));
+                            if let Some(sibling_node) = nodes.get(index + 1) {
+                                needed_hashes.insert(level,
+                                                     ProofNode::Right(sibling_node
+                                                                          .hash()
+                                                                          .unwrap()));
                                 next_hash = create_node_hash(hash, sibling_node.hash().unwrap());
                             } else {
                                 needed_hashes.insert(level, ProofNode::Right(hash));
                                 next_hash = create_node_hash(hash, hash);
                             }
                         } else {
-                            if let Some(sibling_node) = nodes.get(index-1) {
-                                needed_hashes.insert(level, ProofNode::Left(sibling_node.hash().unwrap()));
+                            if let Some(sibling_node) = nodes.get(index - 1) {
+                                needed_hashes.insert(level,
+                                                     ProofNode::Left(sibling_node.hash().unwrap()));
                                 next_hash = create_node_hash(sibling_node.hash().unwrap(), hash);
                             }
                         }
-
-                    },
-                    _ => continue
+                    }
+                    _ => continue,
                 };
             }
             level -= 1;
@@ -343,8 +350,12 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
     }
 
     fn get_element_index(&self, level: usize, hash: &String) -> Option<usize> {
-        let row_hashes = self.nodes.get(&level).unwrap().iter()
-            .map(|e| e.hash().unwrap()).collect::<Vec<&String>>();
+        let row_hashes = self.nodes
+            .get(&level)
+            .unwrap()
+            .iter()
+            .map(|e| e.hash().unwrap())
+            .collect::<Vec<&String>>();
         row_hashes.iter().position(|&s| s == hash)
     }
 }

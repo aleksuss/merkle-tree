@@ -8,29 +8,22 @@ pub enum Element<T: ToString + Display> {
     Node {
         left_node: Box<Element<T>>,
         right_node: Box<Element<T>>,
-        hash: String
+        hash: String,
     },
-    Leaf {
-        data: Rc<T>,
-        hash: String
-    },
-    Empty {
-        hash: String
-    }
+    Leaf { data: Rc<T>, hash: String },
+    Empty { hash: String },
 }
 
 impl<T: Display> Element<T> {
     pub fn empty() -> Self {
-        Element::Empty {
-            hash: empty_hash()
-        }
+        Element::Empty { hash: empty_hash() }
     }
 
     pub fn hash(&self) -> Option<&String> {
         match *self {
-            Element::Node  {ref hash, ..} |
-            Element::Leaf  {ref hash, ..} |
-            Element::Empty {ref hash    } => Some(hash)
+            Element::Node { ref hash, .. } |
+            Element::Leaf { ref hash, .. } |
+            Element::Empty { ref hash } => Some(hash),
         }
     }
 
@@ -39,7 +32,7 @@ impl<T: Display> Element<T> {
 
         Element::Leaf {
             data: value,
-            hash: leaf_hash
+            hash: leaf_hash,
         }
     }
 
@@ -48,7 +41,7 @@ impl<T: Display> Element<T> {
         Element::Node {
             hash: combined_hash,
             left_node: Box::new(left),
-            right_node: Box::new(right)
+            right_node: Box::new(right),
         }
     }
 }
