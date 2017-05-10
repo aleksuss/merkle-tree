@@ -5,10 +5,12 @@ use std::rc::Rc;
 
 use element::Element;
 use hash_utils::*;
+use proof::Proof;
 
-enum ProofNode<'a> {
-    Left(&'a String),
-    Right(&'a String),
+#[derive(Debug)]
+pub enum ProofNode {
+    Left(String),
+    Right(String),
 }
 
 /// MerkleTree struct represents merkle binary tree with values of type `T` and map of nodes.
@@ -229,36 +231,6 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         self.root.hash()
     }
 
-    /// Verifies if the `value` really presents in `MerkleTree`
-    /// # Examples
-    ///
-    /// ```
-    /// extern crate merkle_tree;
-    /// use merkle_tree::MerkleTree;
-    ///
-    /// let mut tree = MerkleTree::from_vec(vec![1, 2, 3, 4]);
-    /// assert!(tree.validate_element(2, "85df8945419d2b5038f7ac83ec1ec6b8267c40fdb3b1e56ff62f6676eb855e70");
-    /// ```
-    pub fn validate_element(&self, value: T, root_hash: &str) -> bool {
-        let needed_hashes = self.get_needed_hashes(&value);
-        let mut hash = create_leaf_hash(&value);
-        let mut level = self.height;
-
-        while level > 0 {
-            if let Some(h) = needed_hashes.get(&level) {
-                hash = match *h {
-                    ProofNode::Left(ref proof_hash) => create_node_hash(proof_hash, &&hash),
-                    ProofNode::Right(ref proof_hash) => create_node_hash(&&hash, proof_hash),
-                };
-            } else {
-                return false;
-            }
-            level -= 1;
-        }
-
-        hash == root_hash
-    }
-
     /// Returns a front-to-back iterator.
     /// # Examples
     ///
@@ -274,6 +246,21 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         self.storage.iter()
     }
 
+    /// Returns the proof for checking if `value` really in tree.
+    /// # Examples
+    ///
+    /// ```
+    /// extern crate merkle_tree;
+    /// use merkle_tree::MerkleTree;
+    ///
+    /// let tree = MerkleTree::from_vec(vec![1, 2, 3, 4]);
+    /// let proof = tree.get_proof(3);
+    /// assert!(proof.validate(tree.root_hash().unwrap());
+    /// ```
+    pub fn get_proof(&self, value: T) -> Proof<T> {
+        let path = self.get_needed_hashes_for_proof(&value);
+        Proof::new(self.root_hash().unwrap().clone(), value.clone(), path)
+    }
 
     fn calculate_tree(&mut self) {
         self.count = self.storage.len();
@@ -313,10 +300,10 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
         }
     }
 
-    fn get_needed_hashes(&self, value: &T) -> BTreeMap<usize, ProofNode> {
+    fn get_needed_hashes_for_proof(&self, value: &T) -> Vec<ProofNode> {
         let mut level = self.height;
         let mut next_hash = create_leaf_hash(&value);
-        let mut needed_hashes = BTreeMap::new();
+        let mut needed_hashes = Vec::new();
 
         while level > 0 {
             if let Some(index) = self.get_element_index(level, &next_hash) {
@@ -326,19 +313,21 @@ impl<T: ToString + Display + Clone> MerkleTree<T> {
                     Some(&Element::Node { ref hash, .. }) => {
                         if index % 2 == 0 {
                             if let Some(sibling_node) = nodes.get(index + 1) {
-                                needed_hashes.insert(level,
-                                                     ProofNode::Right(sibling_node
-                                                                          .hash()
-                                                                          .unwrap()));
+                                needed_hashes.push(ProofNode::Right(sibling_node
+                                                                        .hash()
+                                                                        .unwrap()
+                                                                        .clone()));
                                 next_hash = create_node_hash(hash, sibling_node.hash().unwrap());
                             } else {
-                                needed_hashes.insert(level, ProofNode::Right(hash));
+                                needed_hashes.push(ProofNode::Right(hash.clone()));
                                 next_hash = create_node_hash(hash, hash);
                             }
                         } else {
                             if let Some(sibling_node) = nodes.get(index - 1) {
-                                needed_hashes.insert(level,
-                                                     ProofNode::Left(sibling_node.hash().unwrap()));
+                                needed_hashes.push(ProofNode::Left(sibling_node
+                                                                       .hash()
+                                                                       .unwrap()
+                                                                       .clone()));
                                 next_hash = create_node_hash(sibling_node.hash().unwrap(), hash);
                             }
                         }

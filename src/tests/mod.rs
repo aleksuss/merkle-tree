@@ -33,13 +33,12 @@ fn test_height_and_len() {
     assert_eq!(12, db.len());
     assert_eq!(4, db.height());
     assert_eq!(&root_hash, db.root_hash().unwrap_or(&"None".to_string()));
-    assert_eq!(true, db.validate_element("6", root_hash.as_ref()));
-    assert_eq!(true, db.validate_element("11", root_hash.as_ref()));
-    assert_eq!(false, db.validate_element("14", root_hash.as_ref()));
-    assert_eq!(false,
-               db.validate_element("14adsfasdfsad", root_hash.as_ref()));
-    assert_eq!(true, db.validate_element("1", root_hash.as_ref()));
-    assert_eq!(false, db.validate_element("1423232", root_hash.as_ref()));
+
+    let good_proof = db.get_proof("6");
+    assert_eq!(true, good_proof.validate(root_hash.as_ref()));
+
+    let bad_proof = db.get_proof("1231231231");
+    assert_eq!(false, bad_proof.validate(root_hash.as_ref()));
 }
 
 #[test]
@@ -53,7 +52,6 @@ fn test_get_element() {
 
     assert_eq!(2, *db.get(1).unwrap());
     assert_eq!(6664, *db.get(4).unwrap());
-    assert!(db.validate_element(4, db.root_hash().unwrap()));
 }
 
 #[test]
@@ -123,16 +121,18 @@ fn test_with_structs() {
                 name: "Bobbbb".to_string(),
             });
     assert_eq!(4, db.len());
-    assert!(db.validate_element(Person {
-                                    age: 3,
-                                    name: "Bob".to_string(),
-                                },
-                                db.root_hash().unwrap()));
-    assert!(!db.validate_element(Person {
+
+    let good_proof = db.get_proof(Person {
+                                      age: 3,
+                                      name: "Bob".to_string(),
+                                  });
+    assert!(good_proof.validate(db.root_hash().unwrap()));
+
+    let bad_proof = db.get_proof(Person {
                                      age: 3,
                                      name: "Bobx".to_string(),
-                                 },
-                                 db.root_hash().unwrap()));
+                                 });
+    assert!(!bad_proof.validate(db.root_hash().unwrap()));
 
 }
 
@@ -169,5 +169,10 @@ fn test_root_calculation() {
     let h34 = create_node_hash(&h3, &h4);
     let root = create_node_hash(&h12, &h34);
     assert_eq!(&root, db.root_hash().unwrap());
-    assert!(db.validate_element(2, db.root_hash().unwrap()));
+
+    let good_proof = db.get_proof(2);
+    assert!(good_proof.validate(db.root_hash().unwrap()));
+    let bad_proof = db.get_proof(663);
+    assert!(!bad_proof.validate(db.root_hash().unwrap()));
+
 }

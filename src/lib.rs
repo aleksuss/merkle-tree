@@ -21,6 +21,7 @@ extern crate test;
 mod element;
 mod hash_utils;
 mod merkle_tree;
+mod proof;
 
 mod tests;
 
